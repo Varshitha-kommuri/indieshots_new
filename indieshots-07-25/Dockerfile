@@ -19,16 +19,12 @@ COPY . .
 RUN npm run build
 
 # Build backend with explicit exclusions
-RUN npx esbuild server/index.ts \
+RUN npx esbuild server/index.production.ts \
     --platform=node \
     --packages=external \
     --bundle \
     --format=esm \
-    --outdir=dist \
-    --external:vite \
-    --external:@vitejs/plugin-react \
-    --external:@replit/vite-plugin-cartographer \
-    --external:@replit/vite-plugin-runtime-error-modal
+    --outfile=dist/index.js
 
 # Production stage
 FROM node:20-alpine AS production
