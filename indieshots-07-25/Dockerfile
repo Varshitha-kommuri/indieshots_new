@@ -58,7 +58,7 @@ RUN npx esbuild server/index.production.ts \
     --packages=external \
     --bundle \
     --format=esm \
-    --outfile=dist/server.js
+    --outfile=dist/index.js
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
