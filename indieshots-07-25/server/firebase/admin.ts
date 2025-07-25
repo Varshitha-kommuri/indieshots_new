@@ -1,133 +1,30 @@
-import admin from 'firebase-admin';
+// server/firebase/admin.ts
 
-// Initialize Firebase Admin SDK with proper error handling
-let firebaseInitialized = false;
+import { initializeApp, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 
-try {
-  if (!admin.apps.length) {
-    // Check if we have service account credentials
-    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-    const projectId = process.env.VITE_FIREBASE_PROJECT_ID || 'indieshots-c6bb1';
-    
-    if (serviceAccountKey) {
-      // Production: Use service account credentials
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: serviceAccount.project_id || projectId,
-      });
-      console.log('🔥 Firebase Admin initialized with service account credentials');
-    } else {
-      // Development: Use minimal config for testing
-      // This will work for some operations but requires proper credentials for production
-      admin.initializeApp({
-        projectId: projectId,
-      });
-      console.log('🔥 Firebase Admin initialized in development mode');
-      console.log('⚠️  For full functionality, add FIREBASE_SERVICE_ACCOUNT_KEY environment variable');
-    }
-    firebaseInitialized = true;
-  }
-} catch (error) {
-  console.error('❌ Firebase Admin initialization failed:', error);
-  firebaseInitialized = false;
-}
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Wrapper functions that handle both development and production scenarios
-class FirebaseAuthWrapper {
-  async getUserByEmail(email: string) {
-    if (!firebaseInitialized) {
-      throw new Error('Firebase not properly initialized. Please add service account credentials.');
-    }
-    
-    try {
-      return await admin.auth().getUserByEmail(email);
-    } catch (error: any) {
-      if (error.code === 'auth/user-not-found') {
-        const customError = new Error('User not found');
-        (customError as any).code = 'auth/user-not-found';
-        throw customError;
-      }
-      throw error;
-    }
-  }
+// Fix for ES module __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  async createUser(userData: {
-    email: string;
-    password: string;
-    emailVerified?: boolean;
-    displayName?: string;
-  }) {
-    if (!firebaseInitialized) {
-      throw new Error('Firebase not properly initialized. Please add service account credentials.');
-    }
-    
-    const userRecord = await admin.auth().createUser({
-      email: userData.email,
-      password: userData.password,
-      emailVerified: userData.emailVerified || false,
-      displayName: userData.displayName,
-    });
-    
-    console.log(`🔥 Firebase: Created user ${userData.email} with UID ${userRecord.uid}`);
-    return userRecord;
-  }
+// ✅ Correct path to the service account JSON
+const serviceAccountPath = path.resolve(__dirname, '../../service-account.json');
 
-  async setCustomUserClaims(uid: string, claims: Record<string, any>) {
-    if (!firebaseInitialized) {
-      throw new Error('Firebase not properly initialized. Please add service account credentials.');
-    }
-    
-    await admin.auth().setCustomUserClaims(uid, claims);
-    console.log(`🔥 Firebase: Set custom claims for ${uid}:`, claims);
-  }
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
 
-  async createCustomToken(uid: string) {
-    if (!firebaseInitialized) {
-      throw new Error('Firebase not properly initialized. Please add service account credentials.');
-    }
-    
-    return await admin.auth().createCustomToken(uid);
-  }
+initializeApp({
+  credential: cert(serviceAccount),
+  storageBucket: `${serviceAccount.project_id}.appspot.com`,
+});
 
-  async getUser(uid: string) {
-    if (!firebaseInitialized) {
-      throw new Error('Firebase not properly initialized. Please add service account credentials.');
-    }
-    
-    try {
-      return await admin.auth().getUser(uid);
-    } catch (error: any) {
-      if (error.code === 'auth/user-not-found') {
-        const customError = new Error('User not found');
-        (customError as any).code = 'auth/user-not-found';
-        throw customError;
-      }
-      throw error;
-    }
-  }
+console.log('✅ Firebase Admin Initialized');
 
-  async deleteUser(uid: string) {
-    if (!firebaseInitialized) {
-      throw new Error('Firebase not properly initialized. Please add service account credentials.');
-    }
-    
-    try {
-      await admin.auth().deleteUser(uid);
-      console.log(`🔥 Firebase: Deleted user with UID ${uid}`);
-    } catch (error: any) {
-      if (error.code === 'auth/user-not-found') {
-        console.log(`🔥 Firebase: User ${uid} was already deleted or not found`);
-        const customError = new Error('User not found');
-        (customError as any).code = 'auth/user-not-found';
-        throw customError;
-      }
-      console.error(`🔥 Firebase: Error deleting user ${uid}:`, error);
-      throw error;
-    }
-  }
-}
-
-export const auth = new FirebaseAuthWrapper();
-export const firestore = firebaseInitialized ? admin.firestore() : null;
-export default admin;
+export const auth = getAuth();
+export const db = getFirestore();
+export const bucket = getStorage().bucket();
