@@ -11,7 +11,7 @@ RUN apk add --no-cache dumb-init
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --omit=dev
+RUN npm install
 
 # Copy all source code
 COPY . .
