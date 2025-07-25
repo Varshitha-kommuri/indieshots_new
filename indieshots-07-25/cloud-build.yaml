@@ -1,0 +1,7 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    dir: 'indieshots-07-25'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/indieshots', '.']
+
+images:
+  - 'gcr.io/$PROJECT_ID/indieshots'
