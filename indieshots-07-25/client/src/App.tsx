@@ -12,6 +12,8 @@ import AppLayout from "@/components/layout/app-layout";
 import AuthLayout from "@/components/layout/auth-layout";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import NotFound from "@/pages/not-found";
+import { app } from './firebaseConfig';
+
 
 // Import existing pages
 import Home from "@/pages/home";
