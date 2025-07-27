@@ -6,6 +6,7 @@ const API_KEY = import.meta.env.VITE_FIREBASE_API_KEY;
 const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
 const APP_ID = import.meta.env.VITE_FIREBASE_APP_ID;
 
+
 // Use provided values or generate defaults based on project ID
 const AUTH_DOMAIN = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || `${PROJECT_ID}.firebaseapp.com`;
 const STORAGE_BUCKET = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || `${PROJECT_ID}.appspot.com`;
@@ -17,6 +18,7 @@ if (AUTH_DOMAIN && !AUTH_DOMAIN.includes('.firebaseapp.com')) {
 }
 
 // Log Firebase configuration for debugging (without revealing actual values)
+console.log("here we are !! ",API_KEY);
 console.log("Firebase config check:", {
   apiKeyExists: !!API_KEY,
   authDomainExists: !!AUTH_DOMAIN,
@@ -25,7 +27,7 @@ console.log("Firebase config check:", {
   messagingSenderIdExists: !!MESSAGING_SENDER_ID,
   appIdExists: !!APP_ID
 });
-
+console.log("API keys are missing but how");
 // Additional validation
 if (!API_KEY || !PROJECT_ID || !APP_ID) {
   console.error("Missing required Firebase configuration:", {
