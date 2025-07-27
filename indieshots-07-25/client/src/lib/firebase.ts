@@ -2,15 +2,15 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, browserLocalPersistence, browserSessionPersistence, setPersistence } from "firebase/auth";
 
 // Get environment variables
-const API_KEY = import.meta.env.VITE_FIREBASE_API_KEY;
-const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-const APP_ID = import.meta.env.VITE_FIREBASE_APP_ID;
+const API_KEY ="AIzaSyCpta5RyntySN50wn2dvxB8bbAtjM7-F08";
+const PROJECT_ID = "indieshots-c6bb1";
+const APP_ID = "1:408893270008:web:58f771802afa3b33aa580d";
 
 
 // Use provided values or generate defaults based on project ID
-const AUTH_DOMAIN = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || `${PROJECT_ID}.firebaseapp.com`;
-const STORAGE_BUCKET = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || `${PROJECT_ID}.appspot.com`;
-const MESSAGING_SENDER_ID = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "";
+const AUTH_DOMAIN = "indieshots-c6bb1.firebaseapp.com";
+const STORAGE_BUCKET = "indieshots-c6bb1.firebasestorage.app";
+const MESSAGING_SENDER_ID = "408893270008";
 
 // Validate that auth domain matches expected pattern
 if (AUTH_DOMAIN && !AUTH_DOMAIN.includes('.firebaseapp.com')) {
