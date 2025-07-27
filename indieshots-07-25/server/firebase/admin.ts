@@ -18,19 +18,29 @@ try {
       });
       console.log('🔥 Firebase Admin initialized with service account credentials');
     } else {
-      // Development: Use minimal config for testing
-      // This will work for some operations but requires proper credentials for production
-      admin.initializeApp({
-        projectId: projectId,
-      });
-      console.log('🔥 Firebase Admin initialized in development mode');
-      console.log('⚠️  For full functionality, add FIREBASE_SERVICE_ACCOUNT_KEY environment variable');
+      // Production fallback: Try Google Application Default Credentials
+      try {
+        admin.initializeApp({
+          projectId: projectId,
+        });
+        console.log('🔥 Firebase Admin initialized with Application Default Credentials');
+      } catch (adcError) {
+        console.error('❌ Firebase Admin initialization failed - no credentials available');
+        console.error('Required: FIREBASE_SERVICE_ACCOUNT_KEY environment variable');
+        throw new Error('Firebase Admin initialization failed: Missing service account credentials');
+      }
     }
     firebaseInitialized = true;
   }
 } catch (error) {
   console.error('❌ Firebase Admin initialization failed:', error);
+  console.error('❌ This will cause authentication failures in production');
   firebaseInitialized = false;
+  
+  // In production, throw the error to prevent silent failures
+  if (process.env.NODE_ENV === 'production') {
+    throw error;
+  }
 }
 
 // Wrapper functions that handle both development and production scenarios
@@ -130,4 +140,22 @@ class FirebaseAuthWrapper {
 
 export const auth = new FirebaseAuthWrapper();
 export const firestore = firebaseInitialized ? admin.firestore() : null;
+
+// Validation function to ensure Firebase is properly initialized
+export function validateFirebaseInitialization() {
+  if (!firebaseInitialized) {
+    console.error('❌ Firebase Admin not initialized - authentication will fail');
+    console.error('❌ Check FIREBASE_SERVICE_ACCOUNT_KEY environment variable');
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Firebase Admin not initialized in production environment');
+    }
+  }
+  return firebaseInitialized;
+}
+
+// Run validation on module load in production
+if (process.env.NODE_ENV === 'production') {
+  validateFirebaseInitialization();
+}
+
 export default admin;
